@@ -1,11 +1,9 @@
-import { getHotelsWithRooms } from '@/controllers/hotel-controller';
 import { notFoundError, unauthorizedError } from '@/errors';
 import { cannotListRoomsError } from '@/errors/cannot-list-hotels-error';
 import bookingRepository from '@/repositories/booking-repository';
 import enrollmentRepository from '@/repositories/enrollment-repository';
-import hotelRepository from '@/repositories/hotel-repository';
 import ticketsRepository from '@/repositories/tickets-repository';
-import hotelsService from '../hotels-service';
+
 
 async function getBookingsById(userId: number) {
 
@@ -27,9 +25,8 @@ async function postBookingByUser(userId: number, roomId: number) {
     if (!room) throw notFoundError()
 
     const enrollment = await enrollmentRepository.findWithAddressByUserId(userId);
-    if (!enrollment) {
-        throw notFoundError();
-    }
+    if (!enrollment) throw notFoundError();
+
 
     const ticket = await ticketsRepository.findTicketByEnrollmentId(enrollment.id);
 
@@ -37,16 +34,15 @@ async function postBookingByUser(userId: number, roomId: number) {
         throw cannotListRoomsError();
     }
 
-    const hotel = await hotelRepository.findRoomsByHotelId(room.hotelId);
+    const bookings = await bookingRepository.findBookingsByRoomId(roomId);
 
-    if (!hotel || hotel.Rooms.length === 0) {
-        throw cannotListRoomsError();
-    }
-
-    const bookings = await bookingRepository.insertBooking(userId, roomId);
+    if (room.capacity <= bookings.length) throw cannotListRoomsError()
 
 
-    return bookings;
+    const insertedBookings = await bookingRepository.insertBooking(userId, roomId);
+
+
+    return insertedBookings;
 }
 
 
