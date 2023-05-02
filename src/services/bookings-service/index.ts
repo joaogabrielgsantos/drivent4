@@ -45,10 +45,39 @@ async function postBookingByUser(userId: number, roomId: number) {
     return insertedBookings;
 }
 
+async function updateBookingByUser(userId: number, roomId: number, bookingId: number) {
+
+    if (!userId) throw unauthorizedError()
+
+    const room = await bookingRepository.findRoomByRoomId(roomId)
+    if (!room) throw notFoundError()
+
+    const enrollment = await enrollmentRepository.findWithAddressByUserId(userId);
+    if (!enrollment) throw notFoundError();
+
+
+    const ticket = await ticketsRepository.findTicketByEnrollmentId(enrollment.id);
+
+    if (!ticket || ticket.status === 'RESERVED' || ticket.TicketType.isRemote || !ticket.TicketType.includesHotel) {
+        throw cannotListRoomsError();
+    }
+
+    const bookingsFind = await bookingRepository.findBookingsByRoomId(roomId);
+    if (room.capacity <= bookingsFind.length) throw cannotListRoomsError()
+
+
+    const updatedBooking = await bookingRepository.updateBookingByBookingId(bookingId, roomId)
+
+
+    return updatedBooking;
+}
+
+
 
 const bookingsService = {
     getBookingsById,
-    postBookingByUser
+    postBookingByUser,
+    updateBookingByUser
 };
 
 export default bookingsService

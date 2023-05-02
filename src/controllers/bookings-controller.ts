@@ -34,3 +34,21 @@ export async function postBooking(req: AuthenticatedRequest, res: Response) {
     return res.sendStatus(httpStatus.FORBIDDEN);
   }
 }
+
+export async function updateBooking(req: AuthenticatedRequest, res: Response) {
+  try {
+    const { userId } = req;
+    const {bookingId}= req.params as Record<string, string>
+    const idBooking = Number(bookingId)
+    const {roomId}= req.body
+
+    const updatedBooking = await bookingsService.updateBookingByUser(userId, idBooking, roomId);
+
+    return res.status(httpStatus.OK);
+  } catch (error) {
+    if (error.name === 'UnauthorizedError') {
+      return res.sendStatus(httpStatus.UNAUTHORIZED);
+    }
+    return res.sendStatus(httpStatus.FORBIDDEN);
+  }
+}
