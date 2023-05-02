@@ -7,11 +7,10 @@ export async function getBooking(req: AuthenticatedRequest, res: Response) {
   try {
     const { userId } = req;
 
+    const booking = await bookingsService.getBookingsById(userId);
+    if (!booking) return res.sendStatus(httpStatus.NOT_FOUND);
 
-    const payment = await bookingsService.getBookingsById(userId);
-    if (!payment) return res.sendStatus(httpStatus.NOT_FOUND);
-
-    return res.status(httpStatus.OK).send(payment);
+    return res.status(httpStatus.OK).send(booking);
   } catch (error) {
     if (error.name === 'UnauthorizedError') {
       return res.sendStatus(httpStatus.UNAUTHORIZED);
@@ -19,5 +18,3 @@ export async function getBooking(req: AuthenticatedRequest, res: Response) {
     return res.sendStatus(httpStatus.NOT_FOUND);
   }
 }
-
-

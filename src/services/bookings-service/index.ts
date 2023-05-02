@@ -7,22 +7,17 @@ import bookingRepository from '@/repositories/booking-repository';
 
 async function getBookingsById(userId: number) {
 
+    if (!userId) throw unauthorizedError()
+    
     const bookings = await bookingRepository.findBookingsById(userId);
     if (!bookings || bookings.length === 0) throw notFoundError();
 
-    const result = bookings.map((booking) => ({
-        id: booking.id,
-        Room: booking.Room,
-    }));
-
-    return result;
+    return bookings;
 }
+
 
 const bookingsService = {
     getBookingsById,
 };
 
-
 export default bookingsService
-
-
